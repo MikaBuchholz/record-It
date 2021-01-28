@@ -1,26 +1,47 @@
+import os
+import json
 import pymongo
+from dotenv import load_dotenv, find_dotenv
 
-class RetrieveBuffer():
-    def __init__(self, databaseName = 'Buffer', collectionName = 'BufferSaves'):
-        self.databaseName = databaseName
-        self.collectionName = collectionName
-        self.data = open('creds.txt', 'r').read().split()
-        self.name, self.password = self.data[0], self.data[1]
-        self.client = pymongo.MongoClient(f'mongodb+srv://{self.name}:{self.password}@rlf-shadowplay-cluster.6budz.mongodb.net/rlf-shadowplay-cluster?retryWrites=true&w=majority')
-        self.database= self.client[self.databaseName]
-        self.collection = self.database[self.collectionName]
-    
-    def returnBufferValue(self):
-        result = self.collection.find({})
-        for result in result:
-            return result['buffer']
-    
-    def saveBufferValue(self):
-        with open('bufferValue.txt', 'w') as file:
-            bufferValue = self.returnBufferValue()
-            file.write(bufferValue)
+class Buffer:
+    def __init__(self, databasename = 'rlf-shadowplay-cluster', collectionname = 'buffers'):
+        self.databasename = databasename
+        self.collectionname = collectionname
         
-        return True
+        # Check if config.json does exist
+        if os.path.isfile('config.json'):
+            # load config.json and get buffer value
+            with open('config.json', 'r') as fin:
+                data = json.load(fin)
+                self.__bufferValue = data['buffer']['value']
+        else:
+            self.updateBufferValue() # connect to database and retrieve buffer value
+    
+    def updateBufferValue(self):
+        # load .env file
+        load_dotenv(find_dotenv())
+        MONGO_URI = os.environ.get('MONGO_URI')
 
+        # connect to database
+        client = pymongo.MongoClient(MONGO_URI)
+        database = client[self.databasename]
+        collection = database[self.collectionname]
+        
+        # get database data and get buffer value
+        data = collection.find({})
+        for item in data:
+            if item['date']: # check if data came from website (needs to be reworked)
+                self.__bufferValue = item['buffer']
+                break
+            
+        # write buffer value to config.json (simultaneously creating config.json)
+        with open('config.json', 'w') as fout:
+            config = {}
+            config['buffer'] = { 'value': self.__bufferValue }
+            json.dump(config, fout)
+            
+    def getBufferValue(self):
+        return self.__bufferValue
+    
 if __name__ == '__main__':
-    print(RetrieveBuffer(databaseName="rlf-shadowplay-cluster", collectionName= "buffers").saveBufferValue())
+    print(Buffer().getBufferValue())
