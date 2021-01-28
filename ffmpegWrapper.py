@@ -2,7 +2,7 @@ from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
 import ffmpeg
 from os import remove, system
 
-class FfmpegWrapper():
+class FfmpegWrapper:
     def __init__(self):
         pass
 

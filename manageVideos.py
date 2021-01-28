@@ -1,6 +1,6 @@
 from os import curdir, listdir, 
 
-class ManageVideos():
+class ManageVideos:
     def __init__(self):
         self.videoList = []
 

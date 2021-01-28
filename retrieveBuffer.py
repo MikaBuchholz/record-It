@@ -1,6 +1,6 @@
 import pymongo
 
-class RetrieveBuffer():
+class RetrieveBuffer:
     def __init__(self, databaseName = 'Buffer', collectionName = 'BufferSaves'):
         self.databaseName = databaseName
         self.collectionName = collectionName

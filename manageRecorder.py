@@ -2,7 +2,7 @@ from ffmpegWrapper import FfmpegWrapper
 from retrieveBuffer import RetrieveBuffer
 from manageVideos import ManageVideos
 
-class RecordIt():
+class RecordIt:
     def __init__(self):
         self.ffmpegWrapperClass = FfmpegWrapper()
         self.bufferClass = RetrieveBuffer(databaseName="rlf-shadowplay-cluster", collectionName= "buffers")
