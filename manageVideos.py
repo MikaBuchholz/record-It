@@ -1,4 +1,4 @@
-from os import curdir, listdir, 
+from os import curdir, listdir
 
 class ManageVideos:
     def __init__(self):

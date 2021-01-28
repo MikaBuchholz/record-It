@@ -1,5 +1,5 @@
 from ffmpegWrapper import FfmpegWrapper
-from retrieveBuffer import RetrieveBuffer
+from retrieveBuffer import Buffer
 from manageVideos import ManageVideos
 
 class RecordIt:
