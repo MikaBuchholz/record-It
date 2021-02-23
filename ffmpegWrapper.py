@@ -40,4 +40,4 @@ class FfmpegWrapper:
     
 if __name__ == '__main__':
     #FfmpegWrapper().concatVideos('TestFile157', 'TestFile278')
-    print(FfmpegWrapper().getVideoLength('SexAv'))
+    print(FfmpegWrapper().getVideoLength('Test'))
