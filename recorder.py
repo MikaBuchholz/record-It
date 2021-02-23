@@ -1,10 +1,11 @@
-import picamera
-import time
-from os import system, remove
+#from picamera import PiCamera
+from time import time
+from os import system, remove, curdir, path, mkdir, listdir
 from retrieveBuffer import Buffer
-import random
+from shutil import move
 from datetime import datetime
-from ffmpegWrapper import getVideoLength, extractVideoClip, concatVideos
+from ffmpegWrapper import FfmpegWrapper
+from keyboard import keyboard
 
 class Recorder():
     def __init__(self,resWidth = 1280, resHeight = 720, framerate = 30):
@@ -12,14 +13,21 @@ class Recorder():
         self.resWidth = resWidth
         self.resHeight = resHeight
         self.framerate = framerate
-        self.camera = picamera.PiCamera(resolution=(self.resWidth, self.resHeight), framerate = self.framerate)
-    
+        #self.camera = picamera.PiCamera(resolution=(self.resWidth, self.resHeight), framerate = self.framerate)
+
+        if not path.isdir(f'{curdir}\\rawData'):
+            mkdir(f'{curdir}\\rawData')
+        
+        if not path.isdir(f'{curdir}\\finishedClips'):
+            mkdir(f'{curdir}\\finishedClips')
+
     def startRecording(self):
+        outputName = (datetime.now()).strftime('%d%m%Y%H%M%S')
         self.camera.start_recording(f'main.h264')
-        endTime = time.time() + (2 * self.buffer)
+        endTime = time() + (2 * self.buffer)
         
         while True:
-            time = time.time()
+            time = time()
             
             if keyboard.is_pressed('q'):
                 self.camera.stop_recording()
@@ -27,7 +35,11 @@ class Recorder():
                 
             if time > endTime:
                 self.camera.stop_recording()
+                latestFile = self.getLatestFile()
+                path = f'{curdir}\\rawData'
                 
+                move(f'{curdir}\\{latestFile}', path)
+
         '''
             [/////]
             [////////]
@@ -42,38 +54,45 @@ class Recorder():
             
         '''
         #self.convertToMp4(fileName, f'{fileName}{random.randint(1, 100)}')
-    
-    def recordItLogic(self):
-        videoLength = self.ffmpegWrapperClass().getVideoLength('main.h264')
-        start = videoLength - self.buffer
-        stop = videoLength
-        outputName = (datetime.now()).strftime('recordIt %d-%b-%Y %H:%M:%S')
-        self.ffmpegWrapperClass.extractVideoClip('main.h264', start, stop, outputName)
-        remove('main.h264')
-    
+
     def checkVideoVsBufferLength(self):
-        curVideoLength = getVideoLength(video) # Muss noch zu echtem Video werden
         outputName = (datetime.now()).strftime('recordIt %d-%b-%Y %H:%M:%S')
+        oldestFile = self.getRawFile()
+        latestFile = self.getMainFile()
+        curVideoLength = FfmpegWrapper().getVideoLength(latestFile)
+        bufferLength = FfmpegWrapper().getVideoLength(oldestFile)
         
-        if videoLength < bufferLength:
+        if curVideoLength < self.buffer:
             startTime = abs(curVideoLength - self.buffer)
-            endTime = self.buffer
+            endTime = bufferLength
             
-            extractVideoClip(buffer, startTime, endTime, fileName = 'bufferSubClip')
-            concatVideos('bufferSubClip', video, fileName = outputName)
-            #Files müssen noch deleted werden
+            FfmpegWrapper().extractVideoClip(oldestFile, startTime, endTime, fileName = 'bufferSubClip')
+            FfmpegWrapper().concatVideos('bufferSubClip', latestFile, fileName = outputName)
+            
+            remove('bufferSubClip.h264')
+            move(f'{curdir}\\{outputName}', f'{curdir}\\finishedClips')
         
-        if videoLength > bufferLength or self.checkBufferFolder(self):
+        if curVideoLength > self.buffer or self.checkRawFolder(self):
             startTime = curVideoLength - self.buffer
             endTime = curVideoLength
             
-            extractVideoClip(video, startTime, endTime, fileName = outputName)
-            #Files müssen noch deleted werden
+            FfmpegWrapper().extractVideoClip(latestFile, startTime, endTime, fileName = outputName)
+
+            move(f'{curdir}\\{outputName}', f'{curdir}\\finishedClips')
         
-    def checkBufferFolder(self):
-        ... #Zu lazy jetzt den Folder zu checken, dass machst du zukunfts Mika / Aryeh
-            #Return: True / False
-        
+    def checkRawFolder(self):
+        return len((listdir(f'{curdir}\\rawData'))) > 0
+
+    def getRawFile(self):
+        for file in listdir(f'{curdir}\\rawData'):
+            if file[-4:] == 'h264':
+                return file[-4:]
+
+    def getMainFile(self):
+        for file in listdir(f'{curdir}'):
+            if file[-4:] == 'h264':
+                return file[-4:]
+    
     def convertToMp4(self, fileName, outputName):
         try:
             system(f'MP4Box -add ./{fileName}.h264 ./{outputName}.mp4')
@@ -81,13 +100,13 @@ class Recorder():
             #self.startRecording(random.randit(1, 100))
             print('Done')
             
-        
         except:
             return False
         
 
 if __name__ == '__main__':
-    Recorder().startRecording('TestFile2')
+    Recorder().startRecording()
+    #Recorder().startRecording('TestFile2')
     #Recorder().convertToMp4('TestFile2', 'SexAv')
 
 
