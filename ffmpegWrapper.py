@@ -1,6 +1,7 @@
 from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
 import ffmpeg
 from os import remove, system
+import cv2
 
 class FfmpegWrapper:
     def __init__(self):
@@ -31,7 +32,13 @@ class FfmpegWrapper:
          return True
 
     def getVideoLength(self, file):
-        return VideoFileClip(f'{file}.mp4').duration
+        video = cv2.VideoCapture(f'./{file}.mp4')
+        fps = video.get(cv2.CAP_PROP_FPS)
+        frameCount = video.get(cv2.CAP_PROP_FRAME_COUNT)
+        length = int(frameCount / fps)
+        
+        return length #Sekunden
     
 if __name__ == '__main__':
-    FfmpegWrapper().concatVideos('c1', 'c2')
+    #FfmpegWrapper().concatVideos('TestFile157', 'TestFile278')
+    print(FfmpegWrapper().getVideoLength('SexAv'))
