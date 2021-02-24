@@ -3,35 +3,37 @@ from os import remove, system
 from cv2 import VideoCapture, CAP_PROP_FPS, CAP_PROP_FRAME_COUNT
 
 class FfmpegWrapper:
-    def __init__(self):
-        self.videoType = 'h264'
+    @staticmethod
+    def concatVideos(firstVideo, secondVideo, filename = 'output'):
+        FfmpegWrapper.writeVideosToTxt(firstVideo, secondVideo)
 
-    def concatVideos(self, firstVideo, secondVideo, filename = 'output'):
-        self.writeVideosToTxt(firstVideo, secondVideo)
-
-        system(f'ffmpeg -f concat -i mylist.txt -c copy {filename}.{self.videoType}')
+        system(f'ffmpeg -f concat -i mylist.txt -c copy {filename}.h264')
         remove('mylist.txt')
 
         return True
     
-    def concatVideoAndAudio(self, video, audio, outputName = 'output'):
-        system(f'ffmpeg -i {video}.{self.videoType} -i {audio}.mp3 -c:v copy -c:a aac {outputName}.{self.videoType}')
+    @staticmethod
+    def concatVideoAndAudio(video, audio, outputName = 'output'):
+        system(f'ffmpeg -i {video}.mp4 -i {audio}.mp3 -c:v copy -c:a aac {outputName}.mp4')
 
         return True
-        
-    def writeVideosToTxt(self, firstVideo, secondVideo):
+    
+    @staticmethod
+    def writeVideosToTxt(firstVideo, secondVideo):
         with open('mylist.txt', 'w') as file:
-            file.write(f'file {firstVideo}.{self.videoType}\nfile {secondVideo}.{self.videoType}')
+            file.write(f'file {firstVideo}.{self.videoType}\nfile {secondVideo}.h264')
             
         return True
 
-    def extractVideoClip(self, file, startTime, endTime, filename = 'subclip'): 
-         ffmpeg_extract_subclip(f'{file}.{self.videoType}', startTime, endTime, targetname= f'{filename}.{self.videoType}')
+    @staticmethod
+    def extractVideoClip(file, startTime, endTime, filename = 'subclip'): 
+         ffmpeg_extract_subclip(f'{file}.mp4', startTime, endTime, targetname= f'{filename}.mp4')
 
          return True
 
-    def getVideoLength(self, file):
-        video = VideoCapture(f'./{file}.{self.videoType}')
+    @staticmethod
+    def getVideoLength(file):
+        video = VideoCapture(f'./{file}.h264')
         fps = video.get(CAP_PROP_FPS)
         frameCount = video.get(CAP_PROP_FRAME_COUNT)
         length = int(frameCount / fps)
