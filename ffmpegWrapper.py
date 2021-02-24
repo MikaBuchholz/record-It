@@ -33,19 +33,13 @@ class FfmpegWrapper:
 
     @staticmethod
     def getVideoLength(file):
-<<<<<<< HEAD
         video = VideoCapture(f'./{file}.h264')
         fps = video.get(CAP_PROP_FPS)
         frameCount = video.get(CAP_PROP_FRAME_COUNT)
-=======
-        video = cv2.VideoCapture(f'./{file}.mp4')
-        fps = video.get(cv2.CAP_PROP_FPS)
-        frameCount = video.get(cv2.CAP_PROP_FRAME_COUNT)
->>>>>>> 54522cd027c93da890f708fa2f70573a3e416545
         length = int(frameCount / fps)
         
         return length #Sekunden
     
 if __name__ == '__main__':
     #FfmpegWrapper().concatVideos('TestFile157', 'TestFile278')
-    print(FfmpegWrapper().getVideoLength('Test'))
+  
