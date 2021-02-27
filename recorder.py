@@ -1,6 +1,6 @@
 from picamera import PiCamera
 from time import time, sleep
-from os import system, remove, curdir, path, mkdir, listdir
+from os import system, remove, curdir, path, mkdir
 from retrieveBuffer import Buffer
 from shutil import move
 from datetime import datetime
@@ -25,13 +25,13 @@ class Recorder():
 
     def startRecording(self):
         outputName = (datetime.now()).strftime('%d%m%Y%H%M%S')
-        self.camera.start_recording(f'{outputName}.h264')
+        self.camera.start_recording(f'{outputName}.h264') # PiCamera library recording
         endTime = time() + (2 * self.buffer)
         
         while True:
             currentTime = time()
             
-            if currentTime >= endTime:# Muss noch zum Knopfdruck geändert werden
+            if currentTime >= endTime: # Muss noch zum Knopfdruck geändert werden
                 self.camera.stop_recording()
                 self.checkVideoVsBufferLength()
                 break
@@ -44,27 +44,12 @@ class Recorder():
                 
                 latestFile = ManageVideos().getMainFile()
                 move(f'{curdir}//{latestFile}.h264', f'{curdir}\\rawData')
-                #self.startRecording()
-        '''
-            [/////]
-            [////////]
-
-            Max Video Laenge = 2 * Buffer
-            1: Neue Video Laenge kuerzer als Buffer => Cutting, Stitching, Render
-            2: Neues Video Laenge groesser als Buffer => Cutting, Render
-            => raw Ordner clear & fertiger clip
-            
-            3: raw Ordner ist leer => Cutting, Render
-            3.1: Video Laenge kuerzer oder groeßer check => no cutting or cutting
-            
-        '''
-        #self.convertToMp4(fileName, f'{fileName}{random.randint(1, 100)}')
+                break
 
     def checkVideoVsBufferLength(self):
         outputName = (datetime.now()).strftime('recordIt-%d-%b-%Y-%H:%M:%S')
         oldestFile = ManageVideos().getRawFile()
         latestFile = ManageVideos().getMainFile()
-        print(latestFile)
         curVideoLength = FfmpegWrapper().getVideoLength(latestFile)
         
         if curVideoLength < self.buffer:
@@ -81,15 +66,15 @@ class Recorder():
                 FfmpegWrapper().concatVideos('bufferSubClip', latestFile, fileName = outputName)
                 
                 remove('bufferSubClip.h264')
-                move(f'{curdir}/{outputName}', f'{curdir}\\finishedClips')
+                move(f'{curdir}//{outputName}', f'{curdir}\\finishedClips')
         
-        if curVideoLength > self.buffer: #or ManageVideos().checkRawFolderEmpty(self):
+        if curVideoLength > self.buffer: # or ManageVideos().checkRawFolderEmpty(self):
             startTime = curVideoLength - self.buffer
             endTime = curVideoLength
             
             FfmpegWrapper().extractVideoClip(latestFile, startTime, endTime, fileName = outputName)
 
-            move(f'{curdir}/{outputName}', f'{curdir}\\finishedClips')
+            move(f'{curdir}//{outputName}', f'{curdir}\\finishedClips')
         
     def convertToMp4(self, fileName, outputName):
             system(f'MP4Box -add {fileName}.h264 {outputName}.mp4')
@@ -97,9 +82,25 @@ class Recorder():
             print('Done')
             
 if __name__ == '__main__':
-    Recorder().startRecording()
+    session = Buffer()
+    
+    while session.getRecordingValue():
+        Recorder().startRecording()
+        session.updateConfig()
    
-
-
-
+   
+   
+'''
+            Logic:
+            [/////]
+            [////////]
+            Max Video Laenge = 2 * Buffer
+            1: Neue Video Laenge kuerzer als Buffer => Cutting, Stitching, Render
+            2: Neues Video Laenge groesser als Buffer => Cutting, Render
+            => raw Ordner clear & fertiger clip
+            
+            3: raw Ordner ist leer => Cutting, Render
+            3.1: Video Laenge kuerzer oder groeßer check => no cutting or cutting
+            
+'''
 
