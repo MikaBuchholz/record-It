@@ -44,21 +44,7 @@ class Recorder():
                 
                 latestFile = ManageVideos().getMainFile()
                 move(f'{curdir}//{latestFile}.h264', f'{curdir}\\rawData')
-                #self.startRecording()
-        '''
-            [/////]
-            [////////]
-
-            Max Video Laenge = 2 * Buffer
-            1: Neue Video Laenge kuerzer als Buffer => Cutting, Stitching, Render
-            2: Neues Video Laenge groesser als Buffer => Cutting, Render
-            => raw Ordner clear & fertiger clip
-            
-            3: raw Ordner ist leer => Cutting, Render
-            3.1: Video Laenge kuerzer oder groeßer check => no cutting or cutting
-            
-        '''
-        #self.convertToMp4(fileName, f'{fileName}{random.randint(1, 100)}')
+                break
 
     def checkVideoVsBufferLength(self):
         outputName = (datetime.now()).strftime('recordIt-%d-%b-%Y-%H:%M:%S')
@@ -80,7 +66,7 @@ class Recorder():
                 FfmpegWrapper().concatVideos('bufferSubClip', latestFile, fileName = outputName)
                 
                 remove('bufferSubClip.h264')
-                move(f'{curdir}/{outputName}', f'{curdir}\\finishedClips')
+                move(f'{curdir}//{outputName}', f'{curdir}\\finishedClips')
         
         if curVideoLength > self.buffer: # or ManageVideos().checkRawFolderEmpty(self):
             startTime = curVideoLength - self.buffer
@@ -88,7 +74,7 @@ class Recorder():
             
             FfmpegWrapper().extractVideoClip(latestFile, startTime, endTime, fileName = outputName)
 
-            move(f'{curdir}/{outputName}', f'{curdir}\\finishedClips')
+            move(f'{curdir}//{outputName}', f'{curdir}\\finishedClips')
         
     def convertToMp4(self, fileName, outputName):
             system(f'MP4Box -add {fileName}.h264 {outputName}.mp4')
@@ -96,8 +82,28 @@ class Recorder():
             print('Done')
             
 if __name__ == '__main__':
-    Recorder().startRecording()
+    session = Buffer()
+    
+    while session.getRecordingValue():
+        Recorder().startRecording()
+        session.updateConfig()
    
+   
+   
+'''
+            Logic:
+            [/////]
+            [////////]
+
+            Max Video Laenge = 2 * Buffer
+            1: Neue Video Laenge kuerzer als Buffer => Cutting, Stitching, Render
+            2: Neues Video Laenge groesser als Buffer => Cutting, Render
+            => raw Ordner clear & fertiger clip
+            
+            3: raw Ordner ist leer => Cutting, Render
+            3.1: Video Laenge kuerzer oder groeßer check => no cutting or cutting
+            
+'''
 
 
 
