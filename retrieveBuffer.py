@@ -34,6 +34,7 @@ class Buffer:
             if item['date']: # check if data came from website (needs/can to be reworked)
                 self.__bufferValue = item['buffer']
                 self.__recording = item['recording']
+                self.__btnPress = item['btnPressed']
                 break
             
         # write buffer value to config.json (simultaneously creating config.json)
@@ -41,6 +42,7 @@ class Buffer:
             config = {}
             config['buffer'] = { 'value': self.__bufferValue}
             config['recording'] = self.__recording
+            config['btnPressed'] = self.__btnPress
             json.dump(config, fout)
             
     def getBufferValue(self):
