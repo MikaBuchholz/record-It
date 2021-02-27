@@ -50,5 +50,10 @@ class Buffer:
         return self.__recording
     
 if __name__ == '__main__':
+    Buffer().updateBufferValue()
     print(Buffer().getBufferValue())
     print(Buffer().getRecordingValue())
+    if (Buffer().getRecordingValue()):
+        print('Recording ON')
+    else:
+        print('Recording OFF')
