@@ -6,8 +6,6 @@ from shutil import move
 from datetime import datetime
 from ffmpegWrapper import FfmpegWrapper
 from manageVideos import ManageVideos
-import keyboard 
-from cv2 import waitKey
 
 class Recorder():
     def __init__(self,resWidth = 1280, resHeight = 720, framerate = 30):
@@ -87,13 +85,11 @@ if __name__ == '__main__':
     while session.getRecordingValue():
         Recorder().startRecording()
         session.updateConfig()
-   
-   
-   
+
 '''
-            Logic:
             [/////]
             [////////]
+
             Max Video Laenge = 2 * Buffer
             1: Neue Video Laenge kuerzer als Buffer => Cutting, Stitching, Render
             2: Neues Video Laenge groesser als Buffer => Cutting, Render
@@ -103,4 +99,3 @@ if __name__ == '__main__':
             3.1: Video Laenge kuerzer oder groeßer check => no cutting or cutting
             
 '''
-

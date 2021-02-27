@@ -1,28 +1,28 @@
 from os import curdir, listdir, remove
 
 class ManageVideos:
-    def __init__(self):
-        pass
- 
-    def getRawFile(self):
+    @staticmethod
+    def getRawFile():
         for file in listdir(f'{curdir}\\rawData'):
             if file[-4:] == 'h264':
                 return file[:-5]
 
-    def getMainFile(self):
+    @staticmethod
+    def getMainFile():
         for file in listdir(f'{curdir}'):
             if file[-4:] == 'h264':
                 return file[:-5]
     
-    def checkRawFolderEmpty(self):
+    @staticmethod
+    def checkRawFolderEmpty():
         folderLength = len((listdir(f'{curdir}\\rawData'))) 
         
         if folderLength == 0:
             return True
         
-        if folderLength != 0:
-            return False
+        return False
     
-    def clearRawFolder(self):
+    @staticmethod
+    def clearRawFolder():
         for file in listdir(f'{curdir}\\rawData'):
             remove(f'{curdir}\\rawData//{file}')
