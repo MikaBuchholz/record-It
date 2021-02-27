@@ -16,9 +16,9 @@ class Buffer:
                 self.__bufferValue = data['buffer']['value']
                 self.__recording = data['recording']
         else:
-            self.updateBufferValue() # connect to database and retrieve buffer value
+            self.updateConfig() # connect to database and retrieve buffer value
     
-    def updateBufferValue(self):
+    def updateConfig(self):
         # load .env file
         load_dotenv(find_dotenv())
         MONGO_URI = os.environ.get('MONGO_URI')
@@ -50,7 +50,7 @@ class Buffer:
         return self.__recording
     
 if __name__ == '__main__':
-    Buffer().updateBufferValue()
+    Buffer().updateConfig()
     print(Buffer().getBufferValue())
     print(Buffer().getRecordingValue())
     if (Buffer().getRecordingValue()):
