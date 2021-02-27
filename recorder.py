@@ -25,13 +25,13 @@ class Recorder():
 
     def startRecording(self):
         outputName = (datetime.now()).strftime('%d%m%Y%H%M%S')
-        self.camera.start_recording(f'{outputName}.h264')
+        self.camera.start_recording(f'{outputName}.h264') # PiCamera library recording
         endTime = time() + (2 * self.buffer)
         
         while True:
             currentTime = time()
             
-            if currentTime >= endTime:# Muss noch zum Knopfdruck geändert werden
+            if currentTime >= endTime: # Muss noch zum Knopfdruck geändert werden
                 self.camera.stop_recording()
                 self.checkVideoVsBufferLength()
                 break
@@ -64,7 +64,6 @@ class Recorder():
         outputName = (datetime.now()).strftime('recordIt-%d-%b-%Y-%H:%M:%S')
         oldestFile = ManageVideos().getRawFile()
         latestFile = ManageVideos().getMainFile()
-        print(latestFile)
         curVideoLength = FfmpegWrapper().getVideoLength(latestFile)
         
         if curVideoLength < self.buffer:
@@ -83,7 +82,7 @@ class Recorder():
                 remove('bufferSubClip.h264')
                 move(f'{curdir}/{outputName}', f'{curdir}\\finishedClips')
         
-        if curVideoLength > self.buffer: #or ManageVideos().checkRawFolderEmpty(self):
+        if curVideoLength > self.buffer: # or ManageVideos().checkRawFolderEmpty(self):
             startTime = curVideoLength - self.buffer
             endTime = curVideoLength
             
