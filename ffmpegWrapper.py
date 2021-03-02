@@ -7,7 +7,8 @@ class FfmpegWrapper:
     def concatVideos(firstVideo, secondVideo, filename = 'output'):
         FfmpegWrapper.writeVideosToTxt(firstVideo, secondVideo)
 
-        system(f'ffmpeg -f concat -i mylist.txt -c copy {filename}.h264')
+        system(f'ffmpeg -i "concat:{firstVideo}.h264|{secondVideo}.h264" -c copy {filename}.h264')
+        #system(f'ffmpeg -f concat -i mylist.txt -c copy {filename}.h264')
         remove('mylist.txt')
 
         return True
@@ -21,19 +22,19 @@ class FfmpegWrapper:
     @staticmethod
     def writeVideosToTxt(firstVideo, secondVideo):
         with open('mylist.txt', 'w') as file:
-            file.write(f'file {firstVideo}.{self.videoType}\nfile {secondVideo}.h264')
+            file.write(f'file {firstVideo}.h264 \nfile {secondVideo}.h264')
             
         return True
 
     @staticmethod
     def extractVideoClip(file, startTime, endTime, filename = 'subclip'): 
-         ffmpeg_extract_subclip(f'{file}.mp4', startTime, endTime, targetname= f'{filename}.mp4')
+         ffmpeg_extract_subclip(f'{file}.h264', startTime, endTime, targetname= f'{filename}.h264')
 
          return True
 
     @staticmethod
-    def getVideoLength(file):
-        video = VideoCapture(f'./{file}.h264')
+    def getVideoLength(filepath):
+        video = VideoCapture(filepath)
         fps = video.get(CAP_PROP_FPS)
         frameCount = video.get(CAP_PROP_FRAME_COUNT)
         length = int(frameCount / fps)
@@ -42,4 +43,5 @@ class FfmpegWrapper:
     
 if __name__ == '__main__':
     #FfmpegWrapper().concatVideos('TestFile157', 'TestFile278')
+    ...
   
