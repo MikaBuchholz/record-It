@@ -1,5 +1,4 @@
 import os
-import json
 import pymongo
 from dotenv import load_dotenv, find_dotenv
 
@@ -9,15 +8,7 @@ class Buffer:
         self.collectionname = collectionname
         self.secondcollectionname = secondcollectionname
         
-        # Check if config.json does exist
-        if os.path.isfile('config.json'):
-            # load config.json and get buffer value
-            with open('config.json', 'r') as fin:
-                data = json.load(fin)
-                self.__bufferValue = data['buffer']['value']
-                self.__recording = data['recording']
-        else:
-            self.updateConfig() # connect to database and retrieve buffer value
+        self.updateConfig() # connect to database and set class vars
     
     def updateConfig(self):
         # load .env file
@@ -28,7 +19,7 @@ class Buffer:
         client = pymongo.MongoClient(MONGO_URI)
         database = client[self.databasename]
         self.collection = database[self.collectionname]
-        self.secondCollection = database[self.secondcollectionname]
+        self.secondcollection = database[self.secondcollectionname]
         
         # get database data and get buffer value
         primaryData = self.collection.find({})
@@ -38,19 +29,11 @@ class Buffer:
                 self.__recording = item['recording']
                 break
         
-        secondaryData = self.secondCollection.find({})
+        secondaryData = self.secondcollection.find({})
         for item in secondaryData:
-            if item['date']:
+            if item['date']: # check if data came from website (needs/can to be reworked)
                 self.__btnPress = item['btnPressed']
                 break
-
-        # write buffer value to config.json (simultaneously creating config.json)
-        with open('config.json', 'w') as fout:
-            config = {}
-            config['buffer'] = { 'value': self.__bufferValue}
-            config['recording'] = self.__recording
-            config['btnPressed'] = self.__btnPress
-            json.dump(config, fout)
             
     def getBufferValue(self):
         return self.__bufferValue
@@ -59,21 +42,17 @@ class Buffer:
         return self.__recording
     
     def getBtnPress(self):  
-        for item in self.secondCollection.find({}):
-            if item['model']:
+        for item in self.secondcollection.find({}):
+            if item['model'] == 'Capture':
                 return item['btnPressed']
     
-    def modifyPressedValue(self, configInput = False):
-        buffer = self.getBufferValue()
-        recordVal = self.getRecordingValue()
-
-        with open('config.json', 'w') as fout:
-            config = {}
-            config['buffer'] = { 'value': buffer}
-            config['recording'] = recordVal
-            config['btnPressed'] = configInput
-            json.dump(config, fout)
-
+    def toggleBtnPress(self, state = False):
+        if type(state) == bool:
+            filter = { 'model': 'Capture'}
+            update = { '$set': { 'btnPressed': state } }
+            
+            self.secondcollection.update_one(filter, update)
+        
 if __name__ == '__main__':
     Buffer().updateConfig()
     print(Buffer().getBufferValue())
