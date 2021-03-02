@@ -26,3 +26,9 @@ class ManageVideos:
     def clearRawFolder():
         for file in listdir(f'{curdir}\\rawData'):
             remove(f'{curdir}\\rawData//{file}')
+    
+    @staticmethod
+    def clearMainFolder():
+        for file in listdir(curdir):
+            if file[-4:] == 'h264' or file[-3:] == 'mp4':
+                remove(f'{curdir}//{file}')
