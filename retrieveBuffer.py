@@ -8,9 +8,9 @@ class Buffer:
         self.collectionname = collectionname
         self.secondcollectionname = secondcollectionname
         
-        self.updateConfig() # connect to database and set class vars
+        self.updateValues() # connect to database and set class vars
     
-    def updateConfig(self):
+    def updateValues(self):
         # load .env file
         load_dotenv(find_dotenv())
         MONGO_URI = os.environ.get('MONGO_URI')
