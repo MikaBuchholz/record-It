@@ -5,6 +5,6 @@ do
 	env sleep 1
 done
 
-TODAY=$(date + '%Y-%m-%d_%H:%M:%S')
+TODAY=$(date +'%Y-%m-%d_%H:%M:%S')
 echo $TODAY
 /usr/bin/python3 /home/pi/Desktop/record-It/recorder.py
