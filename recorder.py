@@ -2,25 +2,25 @@
 from picamera import PiCamera
 from time import time, sleep
 from os import system, remove, curdir, path, mkdir
-from retrieveBuffer import Buffer
+from RetrieveBuffer import Buffer
 from shutil import move
 from datetime import datetime
-from ffmpegWrapper import FfmpegWrapper
-from manageVideos import ManageVideos
+from FfmpegWrapper import FfmpegWrapper
+from ManageVideos import ManageVideos
 
-class Recorder():
-    def __init__(self,resWidth = 1280, resHeight = 720, framerate = 30):
-        self.buffer = 20#float(Buffer().getBufferValue()) * 60
+class Recorder:
+    def __init__(self, resWidth = 1280, resHeight = 720, framerate = 30):
+        self.buffer = float(Buffer().getBufferValue()) * 60
         self.resWidth = resWidth
         self.resHeight = resHeight
         self.framerate = framerate
         self.camera = PiCamera(resolution=(self.resWidth, self.resHeight), framerate = self.framerate)
         
-        if not path.isdir(f'{curdir}\\rawData'):
-            mkdir(f'{curdir}\\rawData')
+        if not path.isdir(f'{curdir}/rawData'):
+            mkdir(f'{curdir}/rawData')
         
-        if not path.isdir(f'{curdir}\\finishedClips'):
-            mkdir(f'{curdir}\\finishedClips')
+        if not path.isdir(f'{curdir}/finishedClips'):
+            mkdir(f'{curdir}/finishedClips')
         
         ManageVideos().clearMainFolder()
         ManageVideos().clearRawFolder()
@@ -29,7 +29,7 @@ class Recorder():
         outputName = (datetime.now()).strftime('%Y%m%d%H%M%S')
         self.camera.start_recording(f'{outputName}.h264') # PiCamera library recording 
         endTime = time() + (2 * self.buffer)
-        print('Av')
+        print('Recording...')
         
         while True:
             currentTime = time()
@@ -46,7 +46,7 @@ class Recorder():
                 self.camera.stop_recording()
                 
                 latestFile = ManageVideos().getMainFile()
-                move(f'{curdir}//{latestFile}.h264', f'{curdir}\\rawData')
+                move(f'{curdir}/{latestFile}.h264', f'{curdir}/rawData')
                 break
 
     def checkVideoVsBufferLength(self):
@@ -54,14 +54,14 @@ class Recorder():
         fullOutputName = (datetime.now()).strftime('recordIt-%d-%b-%Y-%H:%M:%S')
         oldestFile = ManageVideos().getRawFile()
         latestFile = ManageVideos().getMainFile()
-        oldestFilePath = f'{curdir}\\rawData//{oldestFile}'
-        latestFilePath = f'{curdir}//{latestFile}'
+        oldestFilePath = f'{curdir}/rawData/{oldestFile}'
+        latestFilePath = f'{curdir}/{latestFile}'
         curVideoLength = FfmpegWrapper().getVideoLength(f'{latestFilePath}.h264')
         
         if curVideoLength < self.buffer:
             if ManageVideos().checkRawFolderEmpty():
                 self.convertToMp4(latestFile, fullOutputName)
-                move(f'{curdir}//{fullOutputName}.mp4', f'{curdir}\\finishedClips')
+                move(f'{curdir}/{fullOutputName}.mp4', f'{curdir}/finishedClips')
                 
             else:
                 bufferLength = FfmpegWrapper().getVideoLength(f'{oldestFilePath}.h264')
@@ -73,7 +73,7 @@ class Recorder():
                 
                 remove('bufferSubClip.h264')
                 self.convertToMp4(outputName, fullOutputName)
-                move(f'{curdir}//{fullOutputName}.mp4', f'{curdir}\\finishedClips')
+                move(f'{curdir}/{fullOutputName}.mp4', f'{curdir}/finishedClips')
         
         if curVideoLength > self.buffer:
             startTime = curVideoLength - self.buffer
@@ -83,7 +83,7 @@ class Recorder():
             
             self.convertToMp4(outputName, fullOutputName)
 
-            move(f'{curdir}//{fullOutputName}', f'{curdir}\\finishedClips')
+            move(f'{curdir}/{fullOutputName}', f'{curdir}/finishedClips')
         
     def convertToMp4(self, fileName, output):
             system(f'MP4Box -add {fileName}.h264 {output}.mp4')
