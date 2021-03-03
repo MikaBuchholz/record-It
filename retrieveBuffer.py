@@ -54,10 +54,15 @@ class Buffer:
             self.secondcollection.update_one(filter, update)
         
 if __name__ == '__main__':
-    Buffer().updateConfig()
-    print(Buffer().getBufferValue())
-    print(Buffer().getRecordingValue())
-    if (Buffer().getRecordingValue()):
-        print('Recording ON')
-    else:
-        print('Recording OFF')
+    import time
+    
+    session = Buffer()
+    
+    while True:
+        print(session.getBtnPress())
+        time.sleep(3)
+        print(session.getBtnPress())
+        time.sleep(3)
+        session.toggleBtnPress(False)
+        print('Changed Btn Press to False')
+        time.sleep(3)
