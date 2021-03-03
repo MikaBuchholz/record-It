@@ -2,7 +2,7 @@ import pyaudio
 import wave
 
 class AudioRecorder():
-    def __init__(self, audioLength = 10, filename = 'sound'):
+    def __init__(self, audioLength = 10, filename = 'sound.wav'):
         self.recordLength = audioLength # seconds to record
         self.filename = filename
         self.bitRate = pyaudio.paInt16 # 16-bit resolution
@@ -40,3 +40,5 @@ class AudioRecorder():
         wavefile.writeframes(b''.join(frames))
         wavefile.close()
 
+if __name__ == '__main__':
+    AudioRecorder().recordAudio()
