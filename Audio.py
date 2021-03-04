@@ -14,11 +14,11 @@ class AudioRecorder:
         self.start_stream()
 
     def start_stream(self):
-        # create pyaudio stream
+        # Erstellt pyaudio stream
         self.stream = self.audioModule.open(format = self.bitRate, rate = self.sampleRate, 
                                        channels = self.channels, input_device_index = self.deviceIndex, 
                                        input = True, frames_per_buffer=self.chunk)
-
+    
     def record(self):
         # started
         # loop through stream and append audio chunks to frame array
@@ -29,19 +29,20 @@ class AudioRecorder:
     def stop(self):
         # self.open = False
         # stop the stream, close it, and terminate the pyaudio instantiation
-        self.stream.stop_stream()
-        self.stream.close()
-        self.audioModule.terminate()
+        self.stream.stop_stream() #Stoppt den Audio stream
+        self.stream.close() #Schliesßt den Audio stream
+        self.audioModule.terminate() #Beendet das Audio-Modul
         self.__save()
 
     def __save(self):
         # save the audio frames as .wav file
         with wave.open(self.filename, 'wb') as wavefile:
-            wavefile.setnchannels(self.channels)
-            wavefile.setsampwidth(self.audioModule.get_sample_size(self.bitRate))
-            wavefile.setframerate(self.sampleRate)
-            wavefile.writeframes(b''.join(self.frames))
-            
+            wavefile.setnchannels(self.channels) #Setzt die Channel für den Audiostream
+            wavefile.setsampwidth(self.audioModule.get_sample_size(self.bitRate)) #Lädt Bitrate für Audio
+            wavefile.setframerate(self.sampleRate) #Setzt Bitrate für Audio
+            wavefile.writeframes(b''.join(self.frames)) #Schreibt Audio in die Datei rein
+
+#Debug code:          
 if __name__ == '__main__':
     i = 0
     audio = AudioRecorder()
