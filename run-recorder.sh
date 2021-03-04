@@ -1,4 +1,5 @@
 #!/bin/bash
+# bash script notwendig für on-boot script start
 for N in {10..1}
 do
 	echo $N'sec'
