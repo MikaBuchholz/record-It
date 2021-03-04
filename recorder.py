@@ -1,12 +1,13 @@
 #!/usr/bin/python3
 from picamera import PiCamera
 from time import time, sleep
-from os import system, remove, curdir, path, mkdir
-from RetrieveBuffer import Buffer
+from os import system, remove, curdir, path, mkdir, listdir
+from retrieveBuffer import Buffer
 from shutil import move
 from datetime import datetime
-from FfmpegWrapper import FfmpegWrapper
-from ManageVideos import ManageVideos
+from ffmpegWrapper import FfmpegWrapper
+from manageVideos import ManageVideos
+from Audio import AudioRecorder
 
 class Recorder:
     def __init__(self, resWidth = 1280, resHeight = 720, framerate = 30):
@@ -27,15 +28,22 @@ class Recorder:
 
     def startRecording(self, session):
         outputName = (datetime.now()).strftime('%Y%m%d%H%M%S')
-        self.camera.start_recording(f'{outputName}.h264') # PiCamera library recording 
+        
+        self.camera.start_recording(f'{outputName}.h264')
+        audio = AudioRecorder()
+        
         endTime = time() + (2 * self.buffer)
+        
         print('Recording...')
         
         while True:
             currentTime = time()
+            audio.record()
             
             if session.getBtnPress():
                 self.camera.stop_recording()
+                audio.stop()
+                
                 self.checkVideoVsBufferLength()
                 break
                 
@@ -44,35 +52,47 @@ class Recorder:
                     ManageVideos().clearRawFolder()
                     
                 self.camera.stop_recording()
+                audio.stop()
                 
                 latestFile = ManageVideos().getMainFile()
+                
+                FfmpegWrapper().concatVideoAndAudio(latestFile, 'audio', latestFile, fileEx = 'h264')
+                
                 move(f'{curdir}/{latestFile}.h264', f'{curdir}/rawData')
                 break
 
     def checkVideoVsBufferLength(self):
         outputName = (datetime.now()).strftime('%Y%m%d%H%M%S')
-        fullOutputName = (datetime.now()).strftime('recordIt-%d-%b-%Y-%H:%M:%S')
+        fullOutputName = (datetime.now()).strftime('recordIt-%d-%b-%Y-%H-%M-%S')
+        
         oldestFile = ManageVideos().getRawFile()
         latestFile = ManageVideos().getMainFile()
+        
         oldestFilePath = f'{curdir}/rawData/{oldestFile}'
         latestFilePath = f'{curdir}/{latestFile}'
+        
         curVideoLength = FfmpegWrapper().getVideoLength(f'{latestFilePath}.h264')
         
         if curVideoLength < self.buffer:
             if ManageVideos().checkRawFolderEmpty():
-                self.convertToMp4(latestFile, fullOutputName)
+                FfmpegWrapper().convertToMp4(latestFile, fullOutputName)
+                
+                FfmpegWrapper().concatVideoAndAudio(fullOutputName, 'audio', fullOutputName)
+                
                 move(f'{curdir}/{fullOutputName}.mp4', f'{curdir}/finishedClips')
                 
             else:
                 bufferLength = FfmpegWrapper().getVideoLength(f'{oldestFilePath}.h264')
                 startTime = abs(curVideoLength - self.buffer)
                 endTime = abs(bufferLength)
-                print(outputName, fullOutputName)
+              
                 FfmpegWrapper().extractVideoClip(oldestFilePath, startTime, endTime, filename = 'bufferSubClip')
                 FfmpegWrapper().concatVideos('bufferSubClip', latestFilePath, filename = outputName)
-                
                 remove('bufferSubClip.h264')
-                self.convertToMp4(outputName, fullOutputName)
+                FfmpegWrapper().convertToMp4(outputName, fullOutputName)
+                
+                FfmpegWrapper().concatVideoAndAudio(fullOutputName, 'audio', fullOutputName)
+                
                 move(f'{curdir}/{fullOutputName}.mp4', f'{curdir}/finishedClips')
         
         if curVideoLength > self.buffer:
@@ -80,15 +100,13 @@ class Recorder:
             endTime = curVideoLength
             
             FfmpegWrapper().extractVideoClip(latestFilePath, startTime, endTime, fileName = outputName)
+            FfmpegWrapper().convertToMp4(outputName, fullOutputName)
             
-            self.convertToMp4(outputName, fullOutputName)
-
+            FfmpegWrapper().concatVideoAndAudio(fullOutputName, 'audio', fullOutputName)
+            
             move(f'{curdir}/{fullOutputName}', f'{curdir}/finishedClips')
         
-    def convertToMp4(self, fileName, output):
-            system(f'MP4Box -add {fileName}.h264 {output}.mp4')
-            remove(f'{fileName}.h264')
-            
+    
 if __name__ == '__main__':
     session = Buffer()
     rec = Recorder()
@@ -101,6 +119,7 @@ if __name__ == '__main__':
         ManageVideos().clearMainFolder()
         
 '''
+            Dev. Konzept:
             [/////]
             [////////]
 
